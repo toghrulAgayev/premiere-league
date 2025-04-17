@@ -3,12 +3,20 @@
 namespace App\Repositories;
 
 use App\Models\Matches;
+use Illuminate\Support\Collection as SupportCollection;
 
 class MatchRepository
 {
-    public function getAll()
+    private $matchModel;
+
+    public function __construct(Matches $matchModel)
     {
-        return Matches::with(['homeTeam', 'awayTeam'])
+        $this->matchModel = $matchModel;
+    }
+
+    public function getAll(): SupportCollection
+    {
+        return $this->matchModel->with(['homeTeam', 'awayTeam'])
             ->get()
             ->map(function ($match) {
                 return(object) [
@@ -21,39 +29,47 @@ class MatchRepository
                     'match_date' => $match->match_date,
                 ];
             });
+
     }
 
-    public function getById($id)
+    public function getById(int $id): ?Matches
     {
-        return Matches::findOrFail($id);
+        return $this->matchModel->where('id', $id)->first();
     }
 
-    public function create(array $data)
+    public function create(array $data): Matches
     {
-        return Matches::create($data);
+        return $this->matchModel->create($data);
     }
 
-    public function update($id, array $data)
-    {
-        $match = $this->getById($id);
-        $match->update($data);
-        return $match;
-    }
-
-    public function delete($id)
+    public function update(int $id, array $data): bool
     {
         $match = $this->getById($id);
-        $match->delete();
+        if($match)
+        {
+            return $match->update($data);
+        }
+        return false;
     }
 
-    public function deleteAll()
+    public function delete(int $id): bool
     {
-        Matches::truncate();
+        $match = $this->getById($id);
+        if($match)
+        {
+            return $match->delete();
+        }
+        return false;
     }
 
-    public function getMatchesByWeek($week)
+    public function deleteAll(): void
     {
-        return Matches::with(['homeTeam', 'awayTeam'])
+        $this->matchModel->truncate();
+    }
+
+    public function getMatchesByWeek($week): SupportCollection
+    {
+        return $this->matchModel->with(['homeTeam', 'awayTeam'])
             ->where('week', $week)
             ->get()
             ->map(function ($match) {

@@ -3,27 +3,18 @@
 namespace App\Services;
 
 use App\Repositories\MatchRepository;
+use Illuminate\Support\Collection;
 
 class MatchService
 {
-    protected $matchRepository;
+    protected MatchRepository $matchRepository;
 
     public function __construct(MatchRepository $matchRepository)
     {
         $this->matchRepository = $matchRepository;
     }
 
-    public function getAllMatches()
-    {
-        return $this->matchRepository->getAll();
-    }
-
-    public function createMatch(array $data)
-    {
-        return $this->matchRepository->create($data);
-    }
-
-    public function getLastWeekMatches()
+    public function getLastWeekMatches(): Collection
     {
         $nextWeek = $this->getLastPlayedWeek();
         return $this->matchRepository->getMatchesByWeek($nextWeek);

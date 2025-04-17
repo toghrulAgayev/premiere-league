@@ -3,34 +3,47 @@
 namespace App\Repositories;
 
 use App\Models\Team;
+use Illuminate\Database\Eloquent\Collection;
 
 class TeamRepository
 {
-    public function getAll()
+    private Team $teamModel;
+    public function __construct(Team $teamModel)
     {
-        return Team::orderBy('points','desc')->get();
+        $this->teamModel = $teamModel;
+    }
+    public function getAll() : Collection
+    {
+        return $this->teamModel->orderBy('points', 'desc')->get();
     }
 
-    public function getById($id)
+    public function getById(int $id): ?Team
     {
-        return Team::findOrFail($id);
+        return $this->teamModel->where('id', $id)->first();
     }
 
-    public function create(array $data)
+    public function create(array $data): Team
     {
-        return Team::create($data);
+        return $this->teamModel->create($data);
     }
 
-    public function update($id, array $data)
+    public function update(int $id, array $data): bool
     {
         $team = $this->getById($id);
-        $team->update($data);
-        return $team;
+        if($team)
+        {
+            return $team->update($data);
+        }
+        return false;
     }
 
-    public function delete($id)
+    public function delete(int $id): bool
     {
         $team = $this->getById($id);
-        $team->delete();
+        if($team)
+        {
+            return $team->delete();
+        }
+        return false;
     }
 }

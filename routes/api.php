@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\MatchController;
 use App\Http\Controllers\LeagueController;
+use App\Http\Controllers\MatchSimulationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,8 +32,9 @@ Route::get('/matches/last-week', [MatchController::class, 'lastWeekMatches']);
 Route::post('/matches', [MatchController::class, 'store']);
 Route::patch('/matches/{matchId}', [MatchController::class, 'update']);
 
-Route::post('/league/simulate-week', [LeagueController::class, 'simulateNextWeek']);
-Route::post('/league/simulate-all', [LeagueController::class, 'simulateAllWeeks']);
+Route::post('/match-simulation/simulate-week', [MatchSimulationController::class, 'simulateNextWeek']);
+Route::post('/match-simulation/simulate-all', [MatchSimulationController::class, 'simulateAllWeeks']);
+
 Route::post('/league/reset', [LeagueController::class, 'resetLeague']);
 Route::get('/league/predictions', [LeagueController::class, 'predictions']);
-Route::get('/league/predictions2', [LeagueController::class, 'calculateTeamWinProbability']);
+

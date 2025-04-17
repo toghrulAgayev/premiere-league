@@ -2,48 +2,55 @@
 
 namespace App\Http\Controllers;
 
+use App\Repositories\MatchRepository;
 use App\Services\LeagueService;
 use App\Services\MatchService;
+use App\Services\MatchSimulationService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class MatchController extends Controller
 {
-    protected $leagueService;
-    protected $matchService;
-    public function __construct(LeagueService $leagueService, MatchService $matchService)
+    private  MatchService $matchService;
+    private MatchSimulationService $matchSimulationService;
+    private MatchRepository $matchRepository;
+    public function __construct( MatchRepository $matchRepository, MatchService $matchService,MatchSimulationService $matchSimulationService)
     {
-        $this->leagueService = $leagueService;
+        $this->matchRepository = $matchRepository;
         $this->matchService = $matchService;
+        $this->matchSimulationService = $matchSimulationService;
     }
 
-    public function index()
+    public function index(): JsonResponse
     {
-        $matches = $this->matchService->getAllMatches();
+        $matches = $this->matchRepository->getAll();
         return response()->json($matches);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $data = $request->all();
-        $match = $this->matchService->createMatch($data);
+        $match = $this->matchRepository->create($data);
         return response()->json($match, 201);
     }
 
-    public function update(Request $request, $matchId)
+    public function update(Request $request, $matchId): JsonResponse
     {
         $newHomeScore = $request->input('home_team_score');
         $newAwayScore = $request->input('away_team_score');
 
         try {
-            $this->leagueService->updateMatchResult($matchId, $newHomeScore, $newAwayScore);
+            $this->matchSimulationService->updateMatchResult($matchId, $newHomeScore, $newAwayScore);
             return response()->json(['message' => 'Match updated successfully.'], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to update match: ' . $e->getMessage()], 500);
         }
     }
 
-    public function lastWeekMatches()
+    public function lastWeekMatches(): JsonResponse
     {
-        return $this->matchService->getLastWeekMatches();
+        $matches = $this->matchService->getLastWeekMatches();
+        return response()->json($matches);
     }
 }
